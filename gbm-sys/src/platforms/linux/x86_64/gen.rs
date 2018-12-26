@@ -24,6 +24,10 @@ impl <T> ::std::fmt::Debug for __BindgenUnionField<T> {
         fmt.write_str("__BindgenUnionField")
     }
 }
+pub type __int32_t = libc::c_int;
+pub type __uint32_t = libc::c_uint;
+pub type __int64_t = libc::c_long;
+pub type __uint64_t = libc::c_ulong;
 #[repr(C)]
 #[derive(Debug, Copy, Clone)]
 pub struct gbm_device([u8; 0]);
@@ -116,6 +120,12 @@ extern "C" {
                                           usage: u32) -> libc::c_int;
 }
 extern "C" {
+    pub fn gbm_device_get_format_modifier_plane_count(gbm: *mut gbm_device,
+                                                      format: u32,
+                                                      modifier: u64)
+     -> libc::c_int;
+}
+extern "C" {
     pub fn gbm_device_destroy(gbm: *mut gbm_device);
 }
 extern "C" {
@@ -124,6 +134,12 @@ extern "C" {
 extern "C" {
     pub fn gbm_bo_create(gbm: *mut gbm_device, width: u32, height: u32,
                          format: u32, flags: u32) -> *mut gbm_bo;
+}
+extern "C" {
+    pub fn gbm_bo_create_with_modifiers(gbm: *mut gbm_device, width: u32,
+                                        height: u32, format: u32,
+                                        modifiers: *const u64,
+                                        count: libc::c_uint) -> *mut gbm_bo;
 }
 #[repr(C)]
 #[derive(Debug, Copy)]
@@ -169,6 +185,78 @@ fn bindgen_test_layout_gbm_import_fd_data() {
 impl Clone for gbm_import_fd_data {
     fn clone(&self) -> Self { *self }
 }
+#[repr(C)]
+#[derive(Debug, Copy)]
+pub struct gbm_import_fd_modifier_data {
+    pub width: u32,
+    pub height: u32,
+    pub format: u32,
+    pub num_fds: u32,
+    pub fds: [libc::c_int; 4usize],
+    pub strides: [libc::c_int; 4usize],
+    pub offsets: [libc::c_int; 4usize],
+    pub modifier: u64,
+}
+#[test]
+fn bindgen_test_layout_gbm_import_fd_modifier_data() {
+    assert_eq!(::std::mem::size_of::<gbm_import_fd_modifier_data>() , 72usize
+               , concat ! (
+               "Size of: " , stringify ! ( gbm_import_fd_modifier_data ) ));
+    assert_eq! (::std::mem::align_of::<gbm_import_fd_modifier_data>() , 8usize
+                , concat ! (
+                "Alignment of " , stringify ! ( gbm_import_fd_modifier_data )
+                ));
+    assert_eq! (unsafe {
+                & ( * ( 0 as * const gbm_import_fd_modifier_data ) ) . width
+                as * const _ as usize } , 0usize , concat ! (
+                "Alignment of field: " , stringify ! (
+                gbm_import_fd_modifier_data ) , "::" , stringify ! ( width )
+                ));
+    assert_eq! (unsafe {
+                & ( * ( 0 as * const gbm_import_fd_modifier_data ) ) . height
+                as * const _ as usize } , 4usize , concat ! (
+                "Alignment of field: " , stringify ! (
+                gbm_import_fd_modifier_data ) , "::" , stringify ! ( height )
+                ));
+    assert_eq! (unsafe {
+                & ( * ( 0 as * const gbm_import_fd_modifier_data ) ) . format
+                as * const _ as usize } , 8usize , concat ! (
+                "Alignment of field: " , stringify ! (
+                gbm_import_fd_modifier_data ) , "::" , stringify ! ( format )
+                ));
+    assert_eq! (unsafe {
+                & ( * ( 0 as * const gbm_import_fd_modifier_data ) ) . num_fds
+                as * const _ as usize } , 12usize , concat ! (
+                "Alignment of field: " , stringify ! (
+                gbm_import_fd_modifier_data ) , "::" , stringify ! ( num_fds )
+                ));
+    assert_eq! (unsafe {
+                & ( * ( 0 as * const gbm_import_fd_modifier_data ) ) . fds as
+                * const _ as usize } , 16usize , concat ! (
+                "Alignment of field: " , stringify ! (
+                gbm_import_fd_modifier_data ) , "::" , stringify ! ( fds ) ));
+    assert_eq! (unsafe {
+                & ( * ( 0 as * const gbm_import_fd_modifier_data ) ) . strides
+                as * const _ as usize } , 32usize , concat ! (
+                "Alignment of field: " , stringify ! (
+                gbm_import_fd_modifier_data ) , "::" , stringify ! ( strides )
+                ));
+    assert_eq! (unsafe {
+                & ( * ( 0 as * const gbm_import_fd_modifier_data ) ) . offsets
+                as * const _ as usize } , 48usize , concat ! (
+                "Alignment of field: " , stringify ! (
+                gbm_import_fd_modifier_data ) , "::" , stringify ! ( offsets )
+                ));
+    assert_eq! (unsafe {
+                & ( * ( 0 as * const gbm_import_fd_modifier_data ) ) .
+                modifier as * const _ as usize } , 64usize , concat ! (
+                "Alignment of field: " , stringify ! (
+                gbm_import_fd_modifier_data ) , "::" , stringify ! ( modifier
+                ) ));
+}
+impl Clone for gbm_import_fd_modifier_data {
+    fn clone(&self) -> Self { *self }
+}
 extern "C" {
     pub fn gbm_bo_import(gbm: *mut gbm_device, type_: u32,
                          buffer: *mut libc::c_void, usage: u32)
@@ -209,7 +297,17 @@ extern "C" {
     pub fn gbm_bo_get_stride(bo: *mut gbm_bo) -> u32;
 }
 extern "C" {
+    pub fn gbm_bo_get_stride_for_plane(bo: *mut gbm_bo, plane: libc::c_int)
+     -> u32;
+}
+extern "C" {
     pub fn gbm_bo_get_format(bo: *mut gbm_bo) -> u32;
+}
+extern "C" {
+    pub fn gbm_bo_get_bpp(bo: *mut gbm_bo) -> u32;
+}
+extern "C" {
+    pub fn gbm_bo_get_offset(bo: *mut gbm_bo, plane: libc::c_int) -> u32;
 }
 extern "C" {
     pub fn gbm_bo_get_device(bo: *mut gbm_bo) -> *mut gbm_device;
@@ -219,6 +317,16 @@ extern "C" {
 }
 extern "C" {
     pub fn gbm_bo_get_fd(bo: *mut gbm_bo) -> libc::c_int;
+}
+extern "C" {
+    pub fn gbm_bo_get_modifier(bo: *mut gbm_bo) -> u64;
+}
+extern "C" {
+    pub fn gbm_bo_get_plane_count(bo: *mut gbm_bo) -> libc::c_int;
+}
+extern "C" {
+    pub fn gbm_bo_get_handle_for_plane(bo: *mut gbm_bo, plane: libc::c_int)
+     -> gbm_bo_handle;
 }
 extern "C" {
     pub fn gbm_bo_write(bo: *mut gbm_bo, buf: *const libc::c_void,
@@ -243,8 +351,11 @@ extern "C" {
                               format: u32, flags: u32) -> *mut gbm_surface;
 }
 extern "C" {
-    pub fn gbm_surface_needs_lock_front_buffer(surface: *mut gbm_surface)
-     -> libc::c_int;
+    pub fn gbm_surface_create_with_modifiers(gbm: *mut gbm_device, width: u32,
+                                             height: u32, format: u32,
+                                             modifiers: *const u64,
+                                             count: libc::c_uint)
+     -> *mut gbm_surface;
 }
 extern "C" {
     pub fn gbm_surface_lock_front_buffer(surface: *mut gbm_surface)
